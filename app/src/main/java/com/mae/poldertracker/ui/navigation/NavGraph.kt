@@ -16,6 +16,7 @@ import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.mae.poldertracker.ui.calendar.CalendarScreen
 import com.mae.poldertracker.ui.home.HomeScreen
+import com.mae.poldertracker.ui.reminder.ReminderScreen
 import com.mae.poldertracker.ui.session.ActiveSessionScreen
 import com.mae.poldertracker.ui.session.CloseSessionScreen
 import com.mae.poldertracker.ui.stats.StatsScreen
@@ -27,6 +28,7 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
 }
 
 private val bottomNavItems = listOf(Screen.Home, Screen.Calendar, Screen.Stats)
+private val bottomNavRoutes = bottomNavItems.map { it.route }.toSet()
 
 @Composable
 fun PolderTrackerNavGraph() {
@@ -67,11 +69,16 @@ fun PolderTrackerNavGraph() {
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onStartSession = { navController.navigate("active_session") }
+                    onStartSession = { navController.navigate("active_session") },
+                    onNavigateToReminder = { navController.navigate("reminder") }
                 )
             }
             composable(Screen.Calendar.route) { CalendarScreen() }
             composable(Screen.Stats.route) { StatsScreen() }
+
+            composable("reminder") {
+                ReminderScreen(onNavigateUp = { navController.navigateUp() })
+            }
 
             composable("active_session") {
                 ActiveSessionScreen(

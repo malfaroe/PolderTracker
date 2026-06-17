@@ -7,11 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
-    primary = Teal40,
+    primary = Turquoise40,
     onPrimary = androidx.compose.ui.graphics.Color.White,
-    primaryContainer = TealContainer,
+    primaryContainer = TurquoiseContainer,
     onPrimaryContainer = Neutral20,
-    secondary = Green40,
+    secondary = Aqua40,
     onSecondary = androidx.compose.ui.graphics.Color.White,
     background = Neutral90,
     surface = androidx.compose.ui.graphics.Color.White,
@@ -20,11 +20,11 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Teal80,
+    primary = Turquoise80,
     onPrimary = Neutral20,
-    primaryContainer = Teal40,
+    primaryContainer = Turquoise40,
     onPrimaryContainer = androidx.compose.ui.graphics.Color.White,
-    secondary = Green80,
+    secondary = Aqua80,
     onSecondary = Neutral20,
     background = DarkBackground,
     surface = DarkSurface,

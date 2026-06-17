@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HomeScreen(
     onStartSession: () -> Unit,
+    onNavigateToReminder: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -32,7 +34,14 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("PolderTracker") })
+            TopAppBar(
+                title = { Text("PolderTracker") },
+                actions = {
+                    IconButton(onClick = onNavigateToReminder) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Recordatorio")
+                    }
+                }
+            )
         }
     ) { padding ->
         Column(
