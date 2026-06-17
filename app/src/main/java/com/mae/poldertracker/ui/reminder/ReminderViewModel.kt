@@ -1,9 +1,11 @@
 package com.mae.poldertracker.ui.reminder
 
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import com.mae.poldertracker.reminder.Reminder
 import com.mae.poldertracker.reminder.ReminderPrefs
+import com.mae.poldertracker.reminder.ReminderReceiver
 import com.mae.poldertracker.reminder.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -52,8 +54,13 @@ class ReminderViewModel @Inject constructor(
         _state.value = _state.value.copy(reminders = list)
     }
 
-    fun openAddDialog() = _state.value.let { _state.value = it.copy(showAddDialog = true) }
-    fun dismissAddDialog() = _state.value.let { _state.value = it.copy(showAddDialog = false) }
-    fun openEditDialog(r: Reminder) = _state.value.let { _state.value = it.copy(editingReminder = r) }
-    fun dismissEditDialog() = _state.value.let { _state.value = it.copy(editingReminder = null) }
+    /** Fires the notification + sound immediately for testing. */
+    fun testNotification() {
+        context.sendBroadcast(Intent(context, ReminderReceiver::class.java))
+    }
+
+    fun openAddDialog() { _state.value = _state.value.copy(showAddDialog = true) }
+    fun dismissAddDialog() { _state.value = _state.value.copy(showAddDialog = false) }
+    fun openEditDialog(r: Reminder) { _state.value = _state.value.copy(editingReminder = r) }
+    fun dismissEditDialog() { _state.value = _state.value.copy(editingReminder = null) }
 }

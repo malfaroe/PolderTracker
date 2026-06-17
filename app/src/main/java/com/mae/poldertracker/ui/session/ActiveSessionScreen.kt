@@ -28,12 +28,10 @@ fun ActiveSessionScreen(
     var displaySeconds by remember { mutableIntStateOf(0) }
     var showExitDialog by remember { mutableStateOf(false) }
 
-    // Start automatically when screen opens
     LaunchedEffect(Unit) {
         if (!uiState.isStarted) viewModel.start()
     }
 
-    // Ticker: recalculates elapsed from timestamps every 500ms
     LaunchedEffect(uiState.isRunning, uiState.isStarted) {
         while (true) {
             displaySeconds = viewModel.computeElapsedSeconds(System.currentTimeMillis())
@@ -48,17 +46,17 @@ fun ActiveSessionScreen(
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
-            title = { Text("¿Salir de la sesión?") },
-            text = { Text("Se perderá el tiempo registrado. ¿Deseas salir sin guardar?") },
+            title = { Text("Sessie verlaten?") },
+            text = { Text("De geregistreerde tijd gaat verloren. Wil je afsluiten zonder op te slaan?") },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.reset()
                     showExitDialog = false
                     onNavigateUp()
-                }) { Text("Salir") }
+                }) { Text("Verlaten") }
             },
             dismissButton = {
-                TextButton(onClick = { showExitDialog = false }) { Text("Continuar") }
+                TextButton(onClick = { showExitDialog = false }) { Text("Doorgaan") }
             }
         )
     }
@@ -66,10 +64,10 @@ fun ActiveSessionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sesión activa") },
+                title = { Text("Actieve sessie") },
                 navigationIcon = {
                     IconButton(onClick = { showExitDialog = true }) {
-                        Icon(Icons.Default.Stop, contentDescription = "Detener")
+                        Icon(Icons.Default.Stop, contentDescription = "Stoppen")
                     }
                 }
             )
@@ -92,19 +90,17 @@ fun ActiveSessionScreen(
             Spacer(Modifier.height(48.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                // Pause / Resume
                 FilledTonalIconButton(
                     onClick = { if (uiState.isRunning) viewModel.pause() else viewModel.resume() },
                     modifier = Modifier.size(64.dp)
                 ) {
                     Icon(
                         if (uiState.isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = if (uiState.isRunning) "Pausar" else "Reanudar",
+                        contentDescription = if (uiState.isRunning) "Pauzeren" else "Hervatten",
                         modifier = Modifier.size(32.dp)
                     )
                 }
 
-                // Stop / finish
                 FilledIconButton(
                     onClick = {
                         val elapsed = viewModel.computeElapsedSeconds(System.currentTimeMillis())
@@ -119,7 +115,7 @@ fun ActiveSessionScreen(
                 ) {
                     Icon(
                         Icons.Default.Stop,
-                        contentDescription = "Finalizar",
+                        contentDescription = "Beëindigen",
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -128,7 +124,7 @@ fun ActiveSessionScreen(
             Spacer(Modifier.height(24.dp))
 
             Text(
-                text = if (uiState.isRunning) "En curso" else "Pausado",
+                text = if (uiState.isRunning) "Bezig" else "Gepauzeerd",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )

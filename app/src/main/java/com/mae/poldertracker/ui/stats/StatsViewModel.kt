@@ -92,7 +92,7 @@ class StatsViewModel @Inject constructor(
 
         return if (period == StatsPeriod.WEEK) {
             val monday = java.time.Instant.ofEpochMilli(from).atZone(zone).toLocalDate()
-            val labels = listOf("L", "M", "X", "J", "V", "S", "D")
+            val labels = listOf("M", "D", "W", "D", "V", "Z", "Z") // Ma Di Wo Do Vr Za Zo
             (0..6).map { i ->
                 val date = monday.plusDays(i.toLong())
                 val epochDay = date.toEpochDay()
@@ -114,7 +114,7 @@ class StatsViewModel @Inject constructor(
                 day = day.plusDays(1)
             }
             weekMap.entries.sortedBy { it.key }.map { (week, minutes) ->
-                BarEntry(label = "S$week", minutes = minutes)
+                BarEntry(label = "W$week", minutes = minutes)
             }
         }
     }

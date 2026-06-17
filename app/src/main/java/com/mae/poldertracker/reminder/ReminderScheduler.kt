@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.mae.poldertracker.MainActivity
 import java.util.Calendar
 
 object ReminderScheduler {
@@ -20,26 +21,35 @@ object ReminderScheduler {
             set(Calendar.MILLISECOND, 0)
             if (timeInMillis <= System.currentTimeMillis()) add(Calendar.DAY_OF_YEAR, 1)
         }
-        am.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            trigger.timeInMillis,
-            AlarmManager.INTERVAL_DAY,
-            buildPendingIntent(context, reminder.id)
+        // setAlarmClock: always exact, fires in Doze mode, needs no SCHEDULE_EXACT_ALARM permission
+        val showIntent = PendingIntent.getActivity(
+            context, reminder.id,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        am.setAlarmClock(
+            AlarmManager.AlarmClockInfo(trigger.timeInMillis, showIntent),
+            buildAlarmIntent(context, reminder)
         )
     }
 
     fun cancel(context: Context, id: Int) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am.cancel(buildPendingIntent(context, id))
+        am.cancel(buildAlarmIntent(context, Reminder(id, 0, 0)))
     }
 
     fun cancelAll(context: Context, reminders: List<Reminder>) =
         reminders.forEach { cancel(context, it.id) }
 
-    private fun buildPendingIntent(context: Context, id: Int): PendingIntent =
-        PendingIntent.getBroadcast(
-            context, id,
-            Intent(context, ReminderReceiver::class.java),
+    private fun buildAlarmIntent(context: Context, reminder: Reminder): PendingIntent {
+        val intent = Intent(context, ReminderReceiver::class.java).apply {
+            putExtra("id", reminder.id)
+            putExtra("hour", reminder.hour)
+            putExtra("minute", reminder.minute)
+        }
+        return PendingIntent.getBroadcast(
+            context, reminder.id, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+    }
 }

@@ -31,7 +31,7 @@ fun CloseSessionScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Guardar sesión") }) }
+        topBar = { TopAppBar(title = { Text("Sessie opslaan") }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -43,11 +43,10 @@ fun CloseSessionScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // Duration display
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        "Duración",
+                        "Duur",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -58,20 +57,19 @@ fun CloseSessionScreen(
                 }
             }
 
-            // Feeling rating
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("¿Cómo te sentiste?", style = MaterialTheme.typography.titleLarge)
+                Text("Hoe voelde je je?", style = MaterialTheme.typography.titleLarge)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "Ansioso",
+                        "Angstig",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                     Text(
-                        "Relajado",
+                        "Ontspannen",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
@@ -82,13 +80,12 @@ fun CloseSessionScreen(
                 )
             }
 
-            // Notes
             OutlinedTextField(
                 value = uiState.notes,
                 onValueChange = viewModel::setNotes,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Notas (opcional)") },
-                placeholder = { Text("Algo que quieras recordar...") },
+                label = { Text("Notities (optioneel)") },
+                placeholder = { Text("Iets wat je wilt onthouden...") },
                 minLines = 3,
                 maxLines = 6
             )
@@ -98,7 +95,7 @@ fun CloseSessionScreen(
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 enabled = uiState.feelingRating > 0
             ) {
-                Text("Guardar sesión")
+                Text("Sessie opslaan")
             }
 
             Spacer(Modifier.height(16.dp))

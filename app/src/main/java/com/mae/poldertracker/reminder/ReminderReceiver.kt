@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.mae.poldertracker.MainActivity
 import com.mae.poldertracker.R
@@ -19,6 +20,14 @@ import kotlin.math.sin
 class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        // Re-schedule for tomorrow (setAlarmClock is one-shot)
+        val id = intent.getIntExtra("id", -1)
+        val hour = intent.getIntExtra("hour", -1)
+        val minute = intent.getIntExtra("minute", -1)
+        if (id >= 0 && hour >= 0 && minute >= 0) {
+            ReminderScheduler.schedule(context, Reminder(id, hour, minute))
+        }
+
         showNotification(context)
         val pending = goAsync()
         Thread {
@@ -30,21 +39,37 @@ class ReminderReceiver : BroadcastReceiver() {
     private fun showNotification(context: Context) {
         val tapIntent = PendingIntent.getActivity(
             context, 0,
-            Intent(context, MainActivity::class.java),
+            Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Grounding time, dear barbarian!")
-            .setContentText("Tu momento de calma te espera 🐱")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentText("Jouw moment van rust wacht op je 🐱")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setContentIntent(tapIntent)
             .setAutoCancel(true)
-            .build()
+            .setVibrate(longArrayOf(0, 400, 100, 400))
 
-        context.getSystemService(NotificationManager::class.java)
-            ?.notify(NOTIFICATION_ID, notification)
+        // Full-screen overlay (works on API < 34; on 34+ requires canUseFullScreenIntent())
+        val nm = context.getSystemService(NotificationManager::class.java)
+        val canFullScreen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            nm?.canUseFullScreenIntent() == true
+        } else {
+            true
+        }
+        if (canFullScreen) {
+            builder.setFullScreenIntent(tapIntent, true)
+        }
+
+        nm?.notify(NOTIFICATION_ID, builder.build())
     }
+
+    // ── Meow synthesis via MediaPlayer + temp WAV ──────────────────────────
 
     private fun playMeow(context: Context) {
         val samples = synthesizeMeow()
@@ -72,7 +97,6 @@ class ReminderReceiver : BroadcastReceiver() {
         }
     }
 
-    // WAV file builder (PCM 16-bit mono little-endian)
     private fun encodeWav(samples: ShortArray, sampleRate: Int): ByteArray {
         val dataBytes = samples.size * 2
         return ByteArray(44 + dataBytes).also { b ->

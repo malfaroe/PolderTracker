@@ -24,7 +24,7 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Estadísticas") }) }
+        topBar = { TopAppBar(title = { Text("Statistieken") }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -36,70 +36,53 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
         ) {
             Spacer(Modifier.height(4.dp))
 
-            // Period toggle
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 SegmentedButton(
                     selected = uiState.period == StatsPeriod.WEEK,
                     onClick = { viewModel.setPeriod(StatsPeriod.WEEK) },
                     shape = SegmentedButtonDefaults.itemShape(0, 2)
-                ) { Text("Semana") }
+                ) { Text("Week") }
                 SegmentedButton(
                     selected = uiState.period == StatsPeriod.MONTH,
                     onClick = { viewModel.setPeriod(StatsPeriod.MONTH) },
                     shape = SegmentedButtonDefaults.itemShape(1, 2)
-                ) { Text("Mes") }
+                ) { Text("Maand") }
             }
 
-            // Bar chart
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "Minutos por ${if (uiState.period == StatsPeriod.WEEK) "día" else "semana"}",
+                        "Minuten per ${if (uiState.period == StatsPeriod.WEEK) "dag" else "week"}",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     Spacer(Modifier.height(12.dp))
-                    BarChart(
-                        entries = uiState.barData,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    BarChart(entries = uiState.barData, modifier = Modifier.fillMaxWidth())
                 }
             }
 
-            // Summary cards
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                SummaryCard(label = "Sessies", value = "${uiState.sessionCount}", modifier = Modifier.weight(1f))
                 SummaryCard(
-                    label = "Sesiones",
-                    value = "${uiState.sessionCount}",
-                    modifier = Modifier.weight(1f)
-                )
-                SummaryCard(
-                    label = "Duración media",
+                    label = "Gemiddelde duur",
                     value = "${uiState.avgDurationMinutes.roundToInt()} min",
                     modifier = Modifier.weight(1f)
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 SummaryCard(
-                    label = "Racha máxima",
-                    value = "${uiState.maxStreak} días",
+                    label = "Langste reeks",
+                    value = "${uiState.maxStreak} dagen",
                     modifier = Modifier.weight(1f)
                 )
-                // Avg feeling card with visual
                 ElevatedCard(modifier = Modifier.weight(1f)) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            "Sensación media",
+                            "Gemiddeld gevoel",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -107,15 +90,10 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(
-                                "%.1f".format(uiState.avgRating),
-                                style = MaterialTheme.typography.headlineMedium
-                            )
+                            Text("%.1f".format(uiState.avgRating), style = MaterialTheme.typography.headlineMedium)
                             TrendIcon(uiState.ratingTrend)
                         }
-                        FeelingRatingDisplay(
-                            rating = uiState.avgRating.roundToInt().coerceIn(0, 5)
-                        )
+                        FeelingRatingDisplay(rating = uiState.avgRating.roundToInt().coerceIn(0, 5))
                     }
                 }
             }
@@ -128,15 +106,10 @@ fun StatsScreen(viewModel: StatsViewModel = hiltViewModel()) {
 @Composable
 private fun SummaryCard(label: String, value: String, modifier: Modifier = Modifier) {
     ElevatedCard(modifier = modifier) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(value, style = MaterialTheme.typography.headlineMedium)
-            Text(
-                label, style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
+            Text(label, style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
         }
     }
 }
@@ -144,20 +117,11 @@ private fun SummaryCard(label: String, value: String, modifier: Modifier = Modif
 @Composable
 private fun TrendIcon(trend: Float) {
     when {
-        trend > 0.1f -> Icon(
-            Icons.Default.ArrowUpward, null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(18.dp)
-        )
-        trend < -0.1f -> Icon(
-            Icons.Default.ArrowDownward, null,
-            tint = MaterialTheme.colorScheme.error,
-            modifier = Modifier.size(18.dp)
-        )
-        else -> Icon(
-            Icons.Default.Remove, null,
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-            modifier = Modifier.size(18.dp)
-        )
+        trend > 0.1f -> Icon(Icons.Default.ArrowUpward, null,
+            tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+        trend < -0.1f -> Icon(Icons.Default.ArrowDownward, null,
+            tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+        else -> Icon(Icons.Default.Remove, null,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.size(18.dp))
     }
 }

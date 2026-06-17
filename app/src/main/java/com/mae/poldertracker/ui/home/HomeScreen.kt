@@ -20,6 +20,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +39,7 @@ fun HomeScreen(
                 title = { Text("PolderTracker") },
                 actions = {
                     IconButton(onClick = onNavigateToReminder) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Recordatorio")
+                        Icon(Icons.Default.Notifications, contentDescription = "Herinneringen")
                     }
                 }
             )
@@ -80,7 +81,7 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = if (uiState.streak == 1) "día seguido" else "días seguidos",
+                            text = if (uiState.streak == 1) "dag op rij" else "dagen op rij",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -93,12 +94,12 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatCard(
-                    label = "Sesiones esta semana",
+                    label = "Sessies deze week",
                     value = "${uiState.weekSessionCount}",
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
-                    label = "Minutos esta semana",
+                    label = "Minuten deze week",
                     value = "${uiState.weekTotalMinutes}",
                     modifier = Modifier.weight(1f)
                 )
@@ -117,7 +118,7 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                Text("Iniciar Grounding", style = MaterialTheme.typography.titleLarge)
+                Text("Start Grounding", style = MaterialTheme.typography.titleLarge)
             }
 
             Spacer(Modifier.height(16.dp))
@@ -146,7 +147,7 @@ private fun LastSessionCard(session: GroundingSession) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Última sesión", style = MaterialTheme.typography.labelLarge,
+            Text("Laatste sessie", style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -171,7 +172,7 @@ private fun LastSessionCard(session: GroundingSession) {
 }
 
 private fun todayLabel(): String {
-    val fmt = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM")
+    val fmt = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale("nl"))
     return LocalDate.now().format(fmt).replaceFirstChar { it.uppercase() }
 }
 
@@ -180,11 +181,11 @@ private fun relativeDate(timestamp: Long): String {
     val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
     val today = LocalDate.now(zone)
     return when {
-        date == today -> "Hoy"
-        date == today.minusDays(1) -> "Ayer"
+        date == today -> "Vandaag"
+        date == today.minusDays(1) -> "Gisteren"
         else -> {
             val days = today.toEpochDay() - date.toEpochDay()
-            "Hace $days días"
+            "$days dagen geleden"
         }
     }
 }

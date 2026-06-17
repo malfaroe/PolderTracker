@@ -32,7 +32,7 @@ fun CalendarHeatmap(
     // Monday = 1 ... Sunday = 7; we want Monday as column 0
     val startOffset = (firstDay.dayOfWeek.value - 1) % 7
     val daysInMonth = yearMonth.lengthOfMonth()
-    val dayLabels = listOf("L", "M", "X", "J", "V", "S", "D")
+    val dayLabels = listOf("M", "D", "W", "D", "V", "Z", "Z") // Ma Di Wo Do Vr Za Zo
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         // Day-of-week header

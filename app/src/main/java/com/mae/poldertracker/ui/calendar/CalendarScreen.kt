@@ -23,16 +23,17 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val zone = ZoneId.systemDefault()
-    val monthFmt = DateTimeFormatter.ofPattern("MMMM yyyy")
+    val monthFmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("nl"))
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Historial") }) }
+        topBar = { TopAppBar(title = { Text("Geschiedenis") }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -40,21 +41,20 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            // Month navigation
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = viewModel::previousMonth) {
-                    Icon(Icons.Default.ChevronLeft, "Mes anterior")
+                    Icon(Icons.Default.ChevronLeft, "Vorige maand")
                 }
                 Text(
                     text = uiState.yearMonth.atDay(1).format(monthFmt).replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.titleLarge
                 )
                 IconButton(onClick = viewModel::nextMonth) {
-                    Icon(Icons.Default.ChevronRight, "Mes siguiente")
+                    Icon(Icons.Default.ChevronRight, "Volgende maand")
                 }
             }
 
@@ -75,7 +75,7 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
             Spacer(Modifier.height(16.dp))
 
             Text(
-                "Sesiones",
+                "Sessies",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(vertical = 4.dp)
             )
@@ -91,7 +91,6 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
         }
     }
 
-    // Detail bottom sheet
     uiState.selectedSession?.let { session ->
         SessionDetailSheet(
             session = session,
@@ -104,13 +103,11 @@ fun CalendarScreen(viewModel: CalendarViewModel = hiltViewModel()) {
 @Composable
 private fun SessionListItem(session: GroundingSession, onClick: () -> Unit) {
     val zone = ZoneId.systemDefault()
-    val fmt = DateTimeFormatter.ofPattern("d MMM, HH:mm")
+    val fmt = DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale("nl"))
     val dateStr = Instant.ofEpochMilli(session.startTimestamp).atZone(zone).format(fmt)
 
     ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -136,7 +133,7 @@ private fun SessionDetailSheet(
 ) {
     var showConfirm by remember { mutableStateOf(false) }
     val zone = ZoneId.systemDefault()
-    val fmt = DateTimeFormatter.ofPattern("d 'de' MMMM yyyy, HH:mm")
+    val fmt = DateTimeFormatter.ofPattern("d MMMM yyyy, HH:mm", Locale("nl"))
     val dateStr = Instant.ofEpochMilli(session.startTimestamp).atZone(zone).format(fmt)
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -147,14 +144,14 @@ private fun SessionDetailSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(dateStr, style = MaterialTheme.typography.titleLarge)
-            Text("Duración: ${formatDuration(session.durationSeconds)}", style = MaterialTheme.typography.bodyLarge)
+            Text("Duur: ${formatDuration(session.durationSeconds)}", style = MaterialTheme.typography.bodyLarge)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Sensación:", style = MaterialTheme.typography.bodyLarge)
+                Text("Gevoel:", style = MaterialTheme.typography.bodyLarge)
                 FeelingRatingDisplay(rating = session.feelingRating)
                 Text("(${session.feelingRating}/5)", style = MaterialTheme.typography.bodyMedium)
             }
             session.notes?.let {
-                Text("Notas: $it", style = MaterialTheme.typography.bodyMedium,
+                Text("Notities: $it", style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
             }
             Spacer(Modifier.height(8.dp))
@@ -165,7 +162,7 @@ private fun SessionDetailSheet(
             ) {
                 Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Eliminar sesión")
+                Text("Sessie verwijderen")
             }
         }
     }
@@ -173,15 +170,15 @@ private fun SessionDetailSheet(
     if (showConfirm) {
         AlertDialog(
             onDismissRequest = { showConfirm = false },
-            title = { Text("¿Eliminar sesión?") },
-            text = { Text("Esta acción no se puede deshacer.") },
+            title = { Text("Sessie verwijderen?") },
+            text = { Text("Deze actie kan niet ongedaan worden gemaakt.") },
             confirmButton = {
                 TextButton(onClick = { showConfirm = false; onDelete(); onDismiss() }) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    Text("Verwijderen", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirm = false }) { Text("Cancelar") }
+                TextButton(onClick = { showConfirm = false }) { Text("Annuleren") }
             }
         )
     }

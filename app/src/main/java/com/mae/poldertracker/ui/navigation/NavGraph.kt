@@ -22,9 +22,9 @@ import com.mae.poldertracker.ui.session.CloseSessionScreen
 import com.mae.poldertracker.ui.stats.StatsScreen
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    object Home : Screen("home", "Inicio", Icons.Default.Home)
-    object Calendar : Screen("calendar", "Historial", Icons.Default.CalendarMonth)
-    object Stats : Screen("stats", "Estadísticas", Icons.Default.BarChart)
+    object Home : Screen("home", "Start", Icons.Default.Home)
+    object Calendar : Screen("calendar", "Geschiedenis", Icons.Default.CalendarMonth)
+    object Stats : Screen("stats", "Statistieken", Icons.Default.BarChart)
 }
 
 private val bottomNavItems = listOf(Screen.Home, Screen.Calendar, Screen.Stats)

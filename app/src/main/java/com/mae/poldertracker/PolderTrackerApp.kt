@@ -17,10 +17,12 @@ class PolderTrackerApp : Application() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             ReminderReceiver.CHANNEL_ID,
-            "Recordatorio de Grounding",
-            NotificationManager.IMPORTANCE_DEFAULT
+            "Grounding herinnering",
+            NotificationManager.IMPORTANCE_HIGH  // heads-up + sound
         ).apply {
-            description = "Recordatorio diario para tu sesión de Grounding"
+            description = "Dagelijkse herinnering voor je Grounding sessie"
+            enableVibration(true)
+            vibrationPattern = longArrayOf(0, 400, 100, 400)
         }
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
     }
