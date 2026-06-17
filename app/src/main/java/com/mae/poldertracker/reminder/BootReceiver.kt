@@ -7,9 +7,7 @@ import android.content.Intent
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
-        val prefs = ReminderPrefs(context)
-        if (prefs.isEnabled) {
-            ReminderScheduler.schedule(context, prefs.hourOfDay, prefs.minute)
-        }
+        val reminders = ReminderPrefs(context).getReminders()
+        if (reminders.isNotEmpty()) ReminderScheduler.scheduleAll(context, reminders)
     }
 }

@@ -2,6 +2,7 @@ package com.mae.poldertracker.ui.reminder
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.mae.poldertracker.reminder.Reminder
 import com.mae.poldertracker.reminder.ReminderPrefs
 import com.mae.poldertracker.reminder.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,9 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 data class ReminderUiState(
-    val isEnabled: Boolean = false,
-    val hour: Int = 9,
-    val minute: Int = 0,
+    val reminders: List<Reminder> = emptyList(),
+    val showAddDialog: Boolean = false,
+    val editingReminder: Reminder? = null,
 )
 
 @HiltViewModel
@@ -23,32 +24,36 @@ class ReminderViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val prefs = ReminderPrefs(context)
+    private val _state = MutableStateFlow(ReminderUiState(reminders = prefs.getReminders()))
+    val uiState: StateFlow<ReminderUiState> = _state.asStateFlow()
 
-    private val _uiState = MutableStateFlow(
-        ReminderUiState(
-            isEnabled = prefs.isEnabled,
-            hour = prefs.hourOfDay,
-            minute = prefs.minute,
-        )
-    )
-    val uiState: StateFlow<ReminderUiState> = _uiState.asStateFlow()
-
-    fun setEnabled(enabled: Boolean) {
-        prefs.isEnabled = enabled
-        _uiState.value = _uiState.value.copy(isEnabled = enabled)
-        if (enabled) {
-            ReminderScheduler.schedule(context, prefs.hourOfDay, prefs.minute)
-        } else {
-            ReminderScheduler.cancel(context)
-        }
+    fun addReminder(hour: Int, minute: Int) {
+        val reminder = Reminder(prefs.nextId(), hour, minute)
+        val updated = (prefs.getReminders() + reminder)
+            .sortedWith(compareBy({ it.hour }, { it.minute }))
+        prefs.saveReminders(updated)
+        ReminderScheduler.schedule(context, reminder)
+        _state.value = _state.value.copy(reminders = updated, showAddDialog = false)
     }
 
-    fun setTime(hour: Int, minute: Int) {
-        prefs.hourOfDay = hour
-        prefs.minute = minute
-        _uiState.value = _uiState.value.copy(hour = hour, minute = minute)
-        if (prefs.isEnabled) {
-            ReminderScheduler.schedule(context, hour, minute)
-        }
+    fun updateReminder(updated: Reminder) {
+        val list = prefs.getReminders().map { if (it.id == updated.id) updated else it }
+            .sortedWith(compareBy({ it.hour }, { it.minute }))
+        prefs.saveReminders(list)
+        ReminderScheduler.cancel(context, updated.id)
+        ReminderScheduler.schedule(context, updated)
+        _state.value = _state.value.copy(reminders = list, editingReminder = null)
     }
+
+    fun deleteReminder(reminder: Reminder) {
+        val list = prefs.getReminders().filter { it.id != reminder.id }
+        prefs.saveReminders(list)
+        ReminderScheduler.cancel(context, reminder.id)
+        _state.value = _state.value.copy(reminders = list)
+    }
+
+    fun openAddDialog() = _state.value.let { _state.value = it.copy(showAddDialog = true) }
+    fun dismissAddDialog() = _state.value.let { _state.value = it.copy(showAddDialog = false) }
+    fun openEditDialog(r: Reminder) = _state.value.let { _state.value = it.copy(editingReminder = r) }
+    fun dismissEditDialog() = _state.value.let { _state.value = it.copy(editingReminder = null) }
 }
