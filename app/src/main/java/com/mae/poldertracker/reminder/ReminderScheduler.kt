@@ -24,11 +24,14 @@ object ReminderScheduler {
         val pending = buildAlarmIntent(context, reminder)
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
-                // Permission not granted: inexact fallback (may be delayed by system batching)
                 am.set(AlarmManager.RTC_WAKEUP, trigger.timeInMillis, pending)
             } else {
-                // Exact alarm, fires in Doze mode (requires SCHEDULE_EXACT_ALARM)
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger.timeInMillis, pending)
+                // setAlarmClock has highest system priority; fires in Doze and isn't deferred
+                val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                val showPi = launchIntent?.let {
+                    PendingIntent.getActivity(context, 0, it, PendingIntent.FLAG_IMMUTABLE)
+                }
+                am.setAlarmClock(AlarmManager.AlarmClockInfo(trigger.timeInMillis, showPi), pending)
             }
         } catch (e: SecurityException) {
             am.set(AlarmManager.RTC_WAKEUP, trigger.timeInMillis, pending)
@@ -43,11 +46,9 @@ object ReminderScheduler {
     fun cancelAll(context: Context, reminders: List<Reminder>) =
         reminders.forEach { cancel(context, it.id) }
 
-    /** True when the app can schedule exact alarms on this device. */
     fun canScheduleExact(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
-        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        return am.canScheduleExactAlarms()
+        return (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
     }
 
     private fun buildAlarmIntent(context: Context, reminder: Reminder): PendingIntent {

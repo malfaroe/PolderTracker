@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -52,6 +53,10 @@ fun ReminderScreen(
     }
     val hasExactAlarm = remember {
         derivedStateOf { ReminderScheduler.canScheduleExact(context) }
+    }
+    val isBatteryOptimized = remember {
+        val pm = context.getSystemService(PowerManager::class.java)
+        !pm.isIgnoringBatteryOptimizations(context.packageName)
     }
 
     val notifPermLauncher = rememberLauncherForActivityResult(
@@ -141,6 +146,57 @@ fun ReminderScreen(
                         modifier = Modifier.align(Alignment.End).padding(end = 8.dp, bottom = 4.dp)
                     ) {
                         Text("Instellingen openen")
+                    }
+                }
+            }
+
+            // ── Battery optimization warning ────────────────────────────────
+            if (isBatteryOptimized) {
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Batterijoptimalisatie actief",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Herinneringen kunnen worden gemist. Schakel optimalisatie uit voor betrouwbare meldingen.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            val intent = try {
+                                Intent(
+                                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                    Uri.parse("package:${context.packageName}")
+                                )
+                            } catch (_: Exception) {
+                                Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                            }
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.align(Alignment.End).padding(end = 8.dp, bottom = 4.dp)
+                    ) {
+                        Text("Uitschakelen")
                     }
                 }
             }
